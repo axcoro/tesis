@@ -1,4 +1,4 @@
-package main
+package board
 
 import (
 	"testing"
@@ -30,6 +30,7 @@ func parsePosition(pos int) (x, y int) {
 
 	return -1, -1
 }
+
 func parseCase(_case []byte, alive bool) (x, y int, b Board) {
 
 	b.Init(3, 3, 0)
@@ -61,7 +62,7 @@ func TestBoard(t *testing.T) {
 
 	assert := assert.New(t)
 
-	testCase := func(variacion int, board Board, x, y int) {
+	testCase := func(variacion int, board Board, x, y int, _case []byte) {
 		// obtengo el estado previo de la celda objetivo
 		target := board.cell(x, y)
 		alive := target.neighborsAlive()
@@ -76,26 +77,30 @@ func TestBoard(t *testing.T) {
 		rule := (alive == 3) || (alive == 2 && target.state)
 		result := target.Alive()
 
-		assert.Equal(rule, result, "Variacion %d La celda (%d,%d) deberia estar %t y esta %t rule: (alive:%d == 3) || (alive:%d == 2 && state:%t) tablero:\n%s", variacion, x, y, rule, result, alive, alive, target.state, board.String())
+		if rule != result {
+			println("stop")
+		}
+
+		assert.Equal(rule, result, "Variacion %d La celda (%d,%d) deberia estar %t y esta %t rule: (alive:%d == 3) || (alive:%d == 2 && state:%t) tablero:\n%s\ncase:%s", variacion, x, y, rule, result, alive, alive, target.state, board.String(), _case)
 	}
 
 	for _, c := range cases {
 		x, y, board := parseCase(c, false) // celda testigo muerta
-		testCase(1, board, x, y)
+		testCase(1, board, x, y, c)
 
 		x, y, board = parseCase(c, true) // celda testigo muerta
-		testCase(2, board, x, y)
+		testCase(2, board, x, y, c)
 	}
 }
 
-var cases = [][]byte {
+var cases = [][]byte{
 	// 'x' celda viva
 	// ' ' celda muerta
 	// '0' celda testigo a la cual se a de testear
-	{ 'x','x','x','x','x','x','x','x','0'},
-	{ 'x','x','x','x','x','x','x','0','x'},
-	{ 'x','x','x','x','x','x','x','0',' '},
-	{ 'x','x','x','x','x','x','x',' ','0'},
+	{'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', '0'},
+	{'x', 'x', 'x', 'x', 'x', 'x', 'x', '0', 'x'},
+	{'x', 'x', 'x', 'x', 'x', 'x', 'x', '0', ' '},
+	{'x', 'x', 'x', 'x', 'x', 'x', 'x', ' ', '0'},
 	{ 'x','x','x','x','x','x','0','x','x'},
 	{ 'x','x','x','x','x','x','0','x',' '},
 	{ 'x','x','x','x','x','x','0',' ','x'},

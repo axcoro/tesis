@@ -1,6 +1,7 @@
 package board
 
 import "strconv"
+import "sync"
 
 type Cell struct {
 	state bool // true: alive, false: dead
@@ -10,11 +11,15 @@ type Cell struct {
 	board *Board
 }
 
+var mutex = sync.RWMutex{}
+
 func (c Cell) Alive() bool {
 	return c.state == true
 }
 
 func (c Cell) Board(b *Board) {
+	mutex.Lock()
+	defer mutex.Unlock()
 	c.board = b
 	b.cells[c.point()] = &c
 }
@@ -24,7 +29,6 @@ func (c Cell) point() string {
 }
 
 func (c Cell) neighbor(x, y int) *Cell {
-
 	_x := c.x + x
 	_y := c.y + y
 
@@ -33,19 +37,13 @@ func (c Cell) neighbor(x, y int) *Cell {
 	return c.board.cells[point]
 }
 
-func (c Cell) neighbors() []*Cell {
+func (c Cell) neighborsAlive() int {
 
-	return []*Cell{
+	neighbors := []*Cell{
 		c.neighbor(-1, -1), c.neighbor(0, -1), c.neighbor(1, -1),
 		c.neighbor(-1, 0), c.neighbor(1, 0),
 		c.neighbor(-1, 1), c.neighbor(0, 1), c.neighbor(1, 1),
 	}
-
-}
-
-func (c Cell) neighborsAlive() int {
-
-	neighbors := c.neighbors()
 
 	alive := 0
 	for _, neighbor := range neighbors {
@@ -57,7 +55,7 @@ func (c Cell) neighborsAlive() int {
 	return alive
 }
 
-func (c *Cell) Next() {
+func (c *Cell) Next() *Cell {
 
 	alive := c.neighborsAlive()
 
@@ -68,6 +66,7 @@ func (c *Cell) Next() {
 
 	// calcular luego de que se leyeron todos los valores
 	c.next = (alive == 3) || (alive == 2 && c.state)
+	return c
 }
 
 func (c *Cell) Apply() {

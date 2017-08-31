@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"math/rand"
 	"strconv"
+	"sync"
 )
 
 type Board struct {
@@ -17,26 +18,49 @@ func (b *Board) Init(w, h, prob int) string {
 	b.h = h
 	b.cells = make(map[string]*Cell)
 
+	wg := sync.WaitGroup{}
+	wg.Add(w * h)
+
 	for x := 0; x < w; x++ {
 		for y := 0; y < h; y++ {
-			alive := rand.Intn(101) < prob
-			cell := Cell{state: alive, x: x, y: y}
-			cell.Board(b)
+			go func(_x, _y int) {
+				alive := rand.Intn(101) < prob
+				cell := Cell{state: alive, x: _x, y: _y}
+				cell.Board(b)
+				wg.Done()
+			}(x, y)
 		}
 	}
 
+	wg.Wait()
 	return b.String()
 }
 
 func (b Board) Next() string {
 
+	// cant := b.w * b.h
+
+	// wg := sync.WaitGroup{}
+	// wg.Add(cant)
+	// cells := make(chan *Cell, cant)
+
 	for x := 0; x < b.w; x++ {
+		// go func(_x int) {
 		for y := 0; y < b.h; y++ {
 			cell := b.cell(x, y)
 			cell.Next()
 			defer cell.Apply()
+			// wg.Done()
 		}
+		// }(x)
 	}
+
+	// wg.Wait()
+	// close(cells)
+
+	// for c := range cells {
+	// 	c.Apply()
+	// }
 
 	return b.String()
 }
