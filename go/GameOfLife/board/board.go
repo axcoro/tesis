@@ -13,7 +13,7 @@ type Board struct {
 }
 
 func (b *Board) Init(w, h, prob int) string {
-
+	defer un(trace("board.Init"))
 	b.w = w
 	b.h = h
 	b.cells = make(map[string]*Cell)
@@ -30,7 +30,7 @@ func (b *Board) Init(w, h, prob int) string {
 }
 
 func (b Board) Next() string {
-
+	defer un(trace("board.Next"))
 	for x := 0; x < b.w; x++ {
 		for y := 0; y < b.h; y++ {
 			cell := b.cell(x, y)
@@ -43,11 +43,13 @@ func (b Board) Next() string {
 }
 
 func (b Board) cell(x, y int) *Cell {
+	defer un(trace("board.cell"))
 	point := strconv.Itoa(x) + strconv.Itoa(y)
 	return b.cells[point]
 }
 
 func (b Board) String() string {
+	defer un(trace("board.String"))
 	var buf bytes.Buffer
 
 	for x := 0; x < b.w; x++ {
