@@ -79,5 +79,5 @@ func (c *Cell) Row() byte {
 		return '*'
 	}
 
-	return 'X'
+	return ' '
 }

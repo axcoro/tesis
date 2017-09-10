@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"math/rand"
 	"strconv"
+	"time"
 )
 
 type Board struct {
@@ -11,7 +12,7 @@ type Board struct {
 	h, w  int
 }
 
-func (b *Board) Init(w, h, prob int) string {
+func (b *Board) Init(w, h, prob int, render bool) string {
 	b.w = w
 	b.h = h
 	b.cells = make(map[string]*Cell)
@@ -24,10 +25,13 @@ func (b *Board) Init(w, h, prob int) string {
 		}
 	}
 
-	return b.String()
+	if render {
+		return b.String()
+	}
+	return ""
 }
 
-func (b Board) Next() string {
+func (b Board) Next(render bool) string {
 	for x := 0; x < b.w; x++ {
 		for y := 0; y < b.h; y++ {
 			cell := b.cell(x, y)
@@ -36,7 +40,11 @@ func (b Board) Next() string {
 		}
 	}
 
-	return b.String()
+	if render {
+		return b.String()
+	}
+	return ""
+
 }
 
 func (b Board) cell(x, y int) *Cell {
@@ -62,5 +70,5 @@ func (b Board) String() string {
 }
 
 func init() {
-	rand.Seed(2345678)
+	rand.Seed(time.Now().UTC().UnixNano())
 }
