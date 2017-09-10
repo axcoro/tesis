@@ -38,7 +38,6 @@ func (b *Board) Init(w, h, prob int) string {
 }
 
 func (b Board) Next() string {
-<<<<<<< HEAD
 
 	// cant := b.w * b.h
 
@@ -46,9 +45,7 @@ func (b Board) Next() string {
 	// wg.Add(cant)
 	// cells := make(chan *Cell, cant)
 
-=======
 	defer un(trace("board.Next"))
->>>>>>> secuencial
 	for x := 0; x < b.w; x++ {
 		// go func(_x int) {
 		for y := 0; y < b.h; y++ {
