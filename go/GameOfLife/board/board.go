@@ -38,31 +38,30 @@ func (b *Board) Init(w, h, prob int) string {
 }
 
 func (b Board) Next() string {
-
-	// cant := b.w * b.h
-
-	// wg := sync.WaitGroup{}
-	// wg.Add(cant)
-	// cells := make(chan *Cell, cant)
-
 	defer un(trace("board.Next"))
+
+	cant := b.w * b.h
+
+	wg := sync.WaitGroup{}
+	wg.Add(cant)
+	cells := make(chan *Cell, cant)
+
 	for x := 0; x < b.w; x++ {
-		// go func(_x int) {
 		for y := 0; y < b.h; y++ {
-			cell := b.cell(x, y)
-			cell.Next()
-			defer cell.Apply()
-			// wg.Done()
+			go func(_x, _y int) {
+				cell := b.cell(_x, _y)
+				cells <- cell.Next()
+				wg.Done()
+			}(x, y)
 		}
-		// }(x)
 	}
 
-	// wg.Wait()
-	// close(cells)
+	wg.Wait()
+	close(cells)
 
-	// for c := range cells {
-	// 	c.Apply()
-	// }
+	for c := range cells {
+		c.Apply()
+	}
 
 	return b.String()
 }
