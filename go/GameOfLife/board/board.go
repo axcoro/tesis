@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"strconv"
 	"sync"
+	"time"
 )
 
 type Board struct {
@@ -12,7 +13,7 @@ type Board struct {
 	h, w  int
 }
 
-func (b *Board) Init(w, h, prob int) string {
+func (b *Board) Init(w, h, prob int, render bool) string {
 	b.w = w
 	b.h = h
 	b.cells = make(map[string]*Cell)
@@ -32,10 +33,13 @@ func (b *Board) Init(w, h, prob int) string {
 	}
 
 	wg.Wait()
-	return b.String()
+	if render {
+		return b.String()
+	}
+	return ""
 }
 
-func (b Board) Next() string {
+func (b Board) Next(render bool) string {
 	cant := b.w * b.h
 
 	wg := sync.WaitGroup{}
@@ -59,7 +63,11 @@ func (b Board) Next() string {
 		c.Apply()
 	}
 
-	return b.String()
+	if render {
+		return b.String()
+	}
+	return ""
+
 }
 
 func (b Board) cell(x, y int) *Cell {
@@ -85,5 +93,5 @@ func (b Board) String() string {
 }
 
 func init() {
-	rand.Seed(2345678)
+	rand.Seed(time.Now().UTC().UnixNano())
 }
