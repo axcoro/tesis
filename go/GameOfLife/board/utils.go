@@ -5,12 +5,12 @@ import (
 	"time"
 )
 
-func trace(s string) (string, time.Time) {
+func Trace(s string) (string, time.Time) {
 	// log.Println("START:", s)
 	return s, time.Now()
 }
 
-func un(s string, startTime time.Time) {
+func Un(s string, startTime time.Time) {
 	endTime := time.Now()
 	fmt.Println(s, ":", endTime.Sub(startTime))
 }

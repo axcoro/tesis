@@ -5,7 +5,6 @@ import (
 	"math/rand"
 	"strconv"
 	"sync"
-	"time"
 )
 
 type Board struct {
@@ -14,7 +13,6 @@ type Board struct {
 }
 
 func (b *Board) Init(w, h, prob int) string {
-	defer un(trace("board.Init"))
 	b.w = w
 	b.h = h
 	b.cells = make(map[string]*Cell)
@@ -38,8 +36,6 @@ func (b *Board) Init(w, h, prob int) string {
 }
 
 func (b Board) Next() string {
-	defer un(trace("board.Next"))
-
 	cant := b.w * b.h
 
 	wg := sync.WaitGroup{}
@@ -67,13 +63,11 @@ func (b Board) Next() string {
 }
 
 func (b Board) cell(x, y int) *Cell {
-	defer un(trace("board.cell"))
 	point := strconv.Itoa(x) + strconv.Itoa(y)
 	return b.cells[point]
 }
 
 func (b Board) String() string {
-	defer un(trace("board.String"))
 	var buf bytes.Buffer
 
 	for x := 0; x < b.w; x++ {
@@ -91,5 +85,5 @@ func (b Board) String() string {
 }
 
 func init() {
-	rand.Seed(time.Now().UTC().UnixNano())
+	rand.Seed(2345678)
 }
