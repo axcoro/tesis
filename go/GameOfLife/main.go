@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"time"
 
 	"github.com/axcoro/tesis/go/GameOfLife/board"
 )
@@ -19,8 +18,9 @@ func clear() {
 
 var reader = bufio.NewReader(os.Stdin)
 
-func wait() {
-	time.Sleep(200 * time.Millisecond)
+func printAndWait(board string) {
+	fmt.Print(board)
+	// time.Sleep(200 * time.Millisecond)
 	reader.ReadString('\n')
 }
 
@@ -36,20 +36,20 @@ func main() {
 	render := *r
 
 	b := board.Board{}
-	if *r {
-		fmt.Printf(b.Init(*h, *w, *p, render))
-	} else {
-		b.Init(*h, *w, *p, render)
+
+	str := b.Init(*h, *w, *p, render)
+	if render {
+		clear()
+		fmt.Println("0%")
+		printAndWait(str)
 	}
 
 	clear()
 	for i := 0; i < 600; i++ {
 		fmt.Printf("%d%%\n", (i*100)/600)
+		str := b.Next(render)
 		if render {
-			fmt.Printf(b.Next(render))
-			wait()
-		} else {
-			b.Next(render)
+			printAndWait(str)
 		}
 		clear()
 	}
