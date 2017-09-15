@@ -4,8 +4,10 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
+	"math/rand"
 	"os"
 	"os/exec"
+	"time"
 
 	"github.com/axcoro/tesis/go/GameOfLife/board"
 )
@@ -30,7 +32,9 @@ func main() {
 	w := flag.Int("w", 30, "Ancho del tablero")
 	p := flag.Int("p", 25, "Propabilidad de que una celda este viva al inicio")
 	t := flag.Int("t", 600, "Cantidad de ciclos")
+	s := flag.Int64("s", 0, "Semilla para rnd")
 	r := flag.Bool("r", false, "Mostrar paso a paso la evolucion del tablero")
+
 	flag.Parse()
 
 	render := *r
@@ -39,6 +43,12 @@ func main() {
 	if !render {
 		defer board.Un(board.Trace("main"))
 	}
+
+	seed := *s
+	if seed == 0 { // sino se define una semilla definir algo pseudo rnd
+		seed = time.Now().UTC().UnixNano()
+	}
+	rand.Seed(seed)
 
 	b := board.Board{}
 	str := b.Init(*h, *w, *p, render)
