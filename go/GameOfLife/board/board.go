@@ -5,7 +5,6 @@ import (
 	"math/rand"
 	"strconv"
 	"sync"
-	"time"
 )
 
 type Board struct {
@@ -90,8 +89,4 @@ func (b Board) String() string {
 		buf.WriteByte('\n')
 	}
 	return buf.String()
-}
-
-func init() {
-	rand.Seed(time.Now().UTC().UnixNano())
 }
