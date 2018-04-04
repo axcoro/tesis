@@ -12,6 +12,7 @@ type Board struct {
 }
 
 func (b *Board) Init(w, h, prob int, render bool) string {
+
 	b.w = w
 	b.h = h
 	b.cells = make(map[string]*Cell)
