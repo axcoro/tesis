@@ -9,8 +9,8 @@ import (
 	"runtime/pprof"
 	"time"
 
-	"github.com/axcoro/tesis/go/GameOfLife/board"
-	"github.com/axcoro/tesis/go/GameOfLife/board/secuencial"
+	"github.com/axcoro/tesis/board"
+	"github.com/axcoro/tesis/board/secuencial"
 )
 
 var (
