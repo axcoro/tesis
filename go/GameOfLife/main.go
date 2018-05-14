@@ -1,33 +1,18 @@
 package main
 
 import (
-	"bufio"
 	"flag"
 	"fmt"
 	"log"
 	"math/rand"
 	"os"
-	"os/exec"
 	"runtime"
 	"runtime/pprof"
 	"time"
 
 	"github.com/axcoro/tesis/go/GameOfLife/board"
+	"github.com/axcoro/tesis/go/GameOfLife/board/secuencial"
 )
-
-func clear() {
-	cmd := exec.Command("clear")
-	cmd.Stdout = os.Stdout
-	cmd.Run()
-}
-
-var reader = bufio.NewReader(os.Stdin)
-
-func printAndWait(board string) {
-	fmt.Print(board)
-	// time.Sleep(200 * time.Millisecond)
-	reader.ReadString('\n')
-}
 
 var (
 	cpuprofile = flag.String("cpuprofile", "", "write cpu profile to `file`")
@@ -67,23 +52,13 @@ func main() {
 	}
 	rand.Seed(seed)
 
-	b := board.Board{}
-	str := b.Init(*h, *w, *p, render)
+	b := secuencial.BoardS{}
 
-	if render {
-		clear()
-		fmt.Printf("0%% (0/%d)\n", n)
-		printAndWait(str)
-	}
+	b.Init(*h, *w, *p, render)
 
-	clear()
 	for i := 0; i < n; i++ {
 		fmt.Printf("%d%% (%d/%d)\n", (((i + 1) * 100) / n), i+1, n)
-		str := b.Next(render)
-		if render {
-			printAndWait(str)
-		}
-		clear()
+		b.Next()
 	}
 
 	if *memprofile != "" {

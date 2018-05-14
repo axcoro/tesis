@@ -6,7 +6,6 @@ import (
 )
 
 func Trace(s string) (string, time.Time) {
-	// log.Println("START:", s)
 	return s, time.Now()
 }
 
