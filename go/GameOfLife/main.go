@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
 	"math/rand"
 	"os"
@@ -54,10 +53,9 @@ func main() {
 
 	b := secuencial.BoardS{}
 
-	b.Init(*h, *w, *p, render)
+	b.Init(*h, *w, *p, *t, render)
 
 	for i := 0; i < n; i++ {
-		fmt.Printf("%d%% (%d/%d)\n", (((i + 1) * 100) / n), i+1, n)
 		b.Next()
 	}
 
