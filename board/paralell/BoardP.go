@@ -1,4 +1,4 @@
-package secuencial
+package paralell
 
 import (
 	"bufio"
@@ -7,11 +7,12 @@ import (
 	"math/rand"
 	"os"
 	"os/exec"
+	"sync"
 )
 
-// BoardS es una implementacion secuencial del juego de la vida
-type BoardS struct {
-	cells [][]*cellS
+// BoardP es una implementacion paralela del juego de la vida
+type BoardP struct {
+	cellP [][]*cellP
 	h, w  int
 
 	render bool
@@ -23,7 +24,7 @@ type BoardS struct {
 var reader = bufio.NewReader(os.Stdin)
 
 // Render dibuja el tablero, solo si b.render == true
-func (b *BoardS) Render() {
+func (b *BoardP) Render() {
 
 	if b.render {
 		// clear
@@ -42,7 +43,7 @@ func (b *BoardS) Render() {
 }
 
 // Init sirve para establecer las condiciones iniciales del tablero
-func (b *BoardS) Init(w, h, prob, times int, render bool) {
+func (b *BoardP) Init(w, h, prob, times int, render bool) {
 
 	b.w = w
 	b.h = h
@@ -51,46 +52,62 @@ func (b *BoardS) Init(w, h, prob, times int, render bool) {
 	b.elapsed = 0
 	b.times = times
 
-	b.cells = make([][]*cellS, w)
+	b.cellP = make([][]*cellP, w)
+
+	wg := sync.WaitGroup{}
+	wg.Add(w)
 
 	for x := 0; x < w; x++ {
-		b.cells[x] = make([]*cellS, h)
-		for y := 0; y < h; y++ {
-			b.cells[x][y] = &cellS{
-				board: b,
-				alive: rand.Intn(101) < prob,
+		go func(_x int) {
+			b.cellP[_x] = make([]*cellP, h)
+			for y := 0; y < h; y++ {
+				b.cellP[_x][y] = &cellP{
+					board: b,
+					alive: rand.Intn(101) < prob,
+				}
 			}
-		}
+			wg.Done()
+		}(x)
 	}
+
+	wg.Wait()
 
 	b.Render()
 }
 
 // Next lleva el tablero al proximo estado
-func (b *BoardS) Next() {
+func (b *BoardP) Next() {
 
-	cells := make(chan *cellS, b.w*b.h)
+	cellP := make(chan *cellP, b.w*b.h)
+
+	wg := sync.WaitGroup{}
+	wg.Add(b.w)
+
 	for x := 0; x < b.w; x++ {
-		for y := 0; y < b.h; y++ {
-			cell := b.cells[x][y]
-			cells <- cell.next(x, y)
-		}
+		go func(_x int) {
+			for y := 0; y < b.h; y++ {
+				cell := b.cellP[_x][y]
+				cellP <- cell.next(_x, y)
+			}
+			wg.Done()
+		}(x)
 	}
 
-	close(cells)
-	for c := range cells {
+	wg.Wait()
+	close(cellP)
+	for c := range cellP {
 		c.apply()
 	}
 
 	b.Render()
 }
 
-func (b *BoardS) String() string {
+func (b BoardP) String() string {
 	var buf bytes.Buffer
 
 	for x := 0; x < b.w; x++ {
 		for y := 0; y < b.h; y++ {
-			cell := b.cells[x][y]
+			cell := b.cellP[x][y]
 			if cell.alive {
 				buf.WriteByte('*')
 			} else {
@@ -102,7 +119,7 @@ func (b *BoardS) String() string {
 	return buf.String()
 }
 
-func (b *BoardS) getCell(x, y int) *cellS {
+func (b BoardP) getCell(x, y int) *cellP {
 	if x < 0 || x >= b.w {
 		return nil
 	}
@@ -111,5 +128,5 @@ func (b *BoardS) getCell(x, y int) *cellS {
 		return nil
 	}
 
-	return b.cells[x][y]
+	return b.cellP[x][y]
 }

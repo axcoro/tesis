@@ -1,11 +1,11 @@
-package secuencial
+package paralell
 
 import (
 	"reflect"
 	"testing"
 )
 
-func Test_cellS_apply(t *testing.T) {
+func Test_cellP_apply(t *testing.T) {
 	type fields struct {
 		alive     bool
 		nextState bool
@@ -22,7 +22,7 @@ func Test_cellS_apply(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c := &cellS{
+			c := &cellP{
 				alive:     tt.fields.alive,
 				nextState: tt.fields.nextState,
 			}
@@ -34,11 +34,11 @@ func Test_cellS_apply(t *testing.T) {
 	}
 }
 
-func Test_cellS_next(t *testing.T) {
+func Test_cellP_next(t *testing.T) {
 	type fields struct {
 		alive     bool
 		nextState bool
-		board     *BoardS
+		board     *BoardP
 	}
 	type args struct {
 		x int
@@ -49,7 +49,7 @@ func Test_cellS_next(t *testing.T) {
 		name   string
 		fields fields
 		args   args
-		want   cellS
+		want   cellP
 	}
 
 	var parseCases = func() (_cases []testCase) {
@@ -58,7 +58,7 @@ func Test_cellS_next(t *testing.T) {
 
 			b, c, x, y := initBoard(_case)
 
-			neighbors := [8]*cellS{b.getCell(x-1, y-1), b.getCell(x, y-1), b.getCell(x+1, y-1), b.getCell(x-1, y) /*b.getCell(x,y]*/, b.getCell(x+1, y), b.getCell(x-1, y+1), b.getCell(x, y+1), b.getCell(x+1, y+1)}
+			neighbors := [8]*cellP{b.getCell(x-1, y-1), b.getCell(x, y-1), b.getCell(x+1, y-1), b.getCell(x-1, y) /*b.getCell(x,y]*/, b.getCell(x+1, y), b.getCell(x-1, y+1), b.getCell(x, y+1), b.getCell(x+1, y+1)}
 			alive := 0
 			for _, neighbor := range neighbors {
 				if neighbor != nil && neighbor.alive {
@@ -77,7 +77,7 @@ func Test_cellS_next(t *testing.T) {
 					x: x,
 					y: y,
 				},
-				want: cellS{
+				want: cellP{
 					alive:     c.alive,
 					nextState: (alive == 3) || (alive == 2 && c.alive),
 				},
@@ -93,7 +93,7 @@ func Test_cellS_next(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c := &cellS{
+			c := &cellP{
 				alive:     tt.fields.alive,
 				nextState: tt.fields.nextState,
 				board:     tt.fields.board,
@@ -103,15 +103,15 @@ func Test_cellS_next(t *testing.T) {
 			got.board = nil
 
 			if !reflect.DeepEqual(*got, tt.want) {
-				t.Errorf("cellS.next() = %v, want %v", got, tt.want)
+				t.Errorf("cellP.next() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func initBoard(_case []byte) (b *BoardS, c *cellS, _x, _y int) {
+func initBoard(_case []byte) (b *BoardP, c *cellP, _x, _y int) {
 
-	b = &BoardS{}
+	b = &BoardP{}
 	b.Init(3, 3, 0, 0, false)
 
 	for index, row := range _case {

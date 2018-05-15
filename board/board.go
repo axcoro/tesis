@@ -2,8 +2,8 @@ package board
 
 // Board reprensenta un tablero del juego de la vida
 type Board interface {
-	Init(width int, height int, prop int, times int, render bool) string
-	Next(render bool) string
+	Init(width, height, prop, times int, render bool)
+	Next()
 	String() string
-	Render() string
+	Render()
 }
