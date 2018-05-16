@@ -1,0 +1,7 @@
+- El main es el mismo
+- Los test son los mismos
+- 4 packages, cada uno con las versiones:
+    1 > secuencial
+    2 > paralelizado optimizado
+    3 > secuencial con gourutinas+canales
+    4 > paralelizado con gourutinas+canales optimizado

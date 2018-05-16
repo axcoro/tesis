@@ -10,8 +10,9 @@ import (
 	"time"
 
 	"github.com/axcoro/tesis/board"
-	"github.com/tesis/board/paralell"
-	"github.com/tesis/board/secuencial"
+	"github.com/axcoro/tesis/board/paralell"
+	"github.com/axcoro/tesis/board/secuencial"
+	"github.com/axcoro/tesis/board/workers"
 )
 
 var (
@@ -23,7 +24,7 @@ var (
 	t          = flag.Int("t", 600, "Cantidad de ciclos")
 	s          = flag.Int64("s", 0, "Semilla para rnd")
 	r          = flag.Bool("r", false, "Mostrar paso a paso la evolucion del tablero")
-	v          = flag.Int("v", 0, "0:secuencial | 1:paralelo")
+	v          = flag.Int("v", 0, "0:secuencial | 1:paralelo | 2:workers")
 )
 
 func main() {
@@ -59,7 +60,8 @@ func main() {
 		tmp = &secuencial.BoardS{}
 	case 1:
 		tmp = &paralell.BoardP{}
-
+	case 2:
+		tmp = &workers.BoardW{}
 	}
 
 	b := tmp.(board.Board)
