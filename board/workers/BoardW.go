@@ -23,6 +23,8 @@ type BoardW struct {
 
 var reader = bufio.NewReader(os.Stdin)
 
+const minWorkers = 1
+
 // Render dibuja el tablero, solo si b.render == true
 func (b *BoardW) Render() {
 
@@ -42,21 +44,51 @@ func (b *BoardW) Render() {
 	b.elapsed = b.elapsed + 1
 }
 
-func worker(tasksCh <-chan workerParams, wg *sync.WaitGroup) {
+func workerInit(tasksInit <-chan [2]int, board *BoardW, prob int, wg *sync.WaitGroup) {
 	for {
-		task, ok := <-tasksCh
+		coord, ok := <-tasksInit
 		if !ok {
 			return
 		}
-		task.fn(task.b, task.x, task.y)
+
+		x, y := coord[0], coord[1]
+
+		board.cellW[x][y] = &cellW{
+			board: board,
+			alive: rand.Intn(101) < prob,
+		}
+
 		wg.Done()
 	}
 }
 
-type workerParams struct {
-	fn   func(b *BoardW, x, y int)
-	b    *BoardW
-	x, y int
+func workerNext(tasksNext <-chan [2]int, cells chan<- *cellW, board *BoardW, wg *sync.WaitGroup) {
+	for {
+		coord, ok := <-tasksNext
+		if !ok {
+			return
+		}
+
+		x, y := coord[0], coord[1]
+
+		cell := board.cellW[x][y]
+		cells <- cell.next(x, y)
+
+		wg.Done()
+	}
+}
+
+func workerApply(cells <-chan *cellW, wg *sync.WaitGroup) {
+	for {
+		cell, ok := <-cells
+		if !ok {
+			return
+		}
+
+		cell.apply()
+
+		wg.Done()
+	}
 }
 
 // Init sirve para establecer las condiciones iniciales del tablero
@@ -73,29 +105,21 @@ func (b *BoardW) Init(w, h, prob, times int, render bool) {
 
 	wg := sync.WaitGroup{}
 	wg.Add(w * h)
-	tasksCh := make(chan workerParams)
+	tasksInit := make(chan [2]int)
 
-	for i := 0; i < 5; i++ {
-		go worker(tasksCh, &wg)
+	for i := 0; i < minWorkers; i++ {
+		go workerInit(tasksInit, b, prob, &wg)
 	}
 
 	for x := 0; x < w; x++ {
 		b.cellW[x] = make([]*cellW, h)
 		for y := 0; y < h; y++ {
-			params := workerParams{
-				func(_b *BoardW, _x, _y int) {
-					_b.cellW[_x][_y] = &cellW{
-						board: _b,
-						alive: rand.Intn(101) < prob,
-					}
-				},
-				b, x, y,
-			}
-			tasksCh <- params
+			tasksInit <- [2]int{x, y}
 		}
 	}
+
 	wg.Wait()
-	close(tasksCh)
+	close(tasksInit)
 
 	b.Render()
 }
@@ -103,27 +127,31 @@ func (b *BoardW) Init(w, h, prob, times int, render bool) {
 // Next lleva el tablero al proximo estado
 func (b *BoardW) Next() {
 
-	cellW := make(chan *cellW, b.w*b.h)
+	tasksNext := make(chan [2]int)
+	cells := make(chan *cellW, b.w*b.h)
 
 	wg := sync.WaitGroup{}
-	wg.Add(b.w)
+	wg.Add(b.w * b.h)
+
+	for i := 0; i < minWorkers; i++ {
+		go workerNext(tasksNext, cells, b, &wg)
+	}
 
 	for x := 0; x < b.w; x++ {
-		go func(_x int) {
-			for y := 0; y < b.h; y++ {
-				cell := b.cellW[_x][y]
-				cellW <- cell.next(_x, y)
-			}
-			wg.Done()
-		}(x)
+		for y := 0; y < b.h; y++ {
+			tasksNext <- [2]int{x, y}
+		}
 	}
 
 	wg.Wait()
-	close(cellW)
-	for c := range cellW {
-		c.apply()
+	close(cells)
+
+	wg.Add(b.w * b.h)
+	for i := 0; i < minWorkers; i++ {
+		go workerApply(cells, &wg)
 	}
 
+	wg.Wait()
 	b.Render()
 }
 
